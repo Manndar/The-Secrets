@@ -1,0 +1,112 @@
+//Whisper App
+
+      user                          pass
+   user@hash.com                    123456
+   user@bcrypt.com                  654321
+   user@passportlocalmongoose.com   123456
+-----------------------------------------------------
+/355/bash command for authentication
+
+npm install mongoose-encryption
+
+//for password encryption , refer (https://www.npmjs.com/package/mongoose-encryption)
+//accessing secret from .env as process.env.secret
+// userSchema.plugin(encrypt, { secret : process.env.SECRET , encryptedFields: ["password"] });
+-----------------------------------------------------
+
+/356/setting environment variables(refer https://www.npmjs.com/package/dotenv)
+steps->
+1> bash -> npm i dotenv
+2> require('dotenv').config() (//at top in app.js)
+3> bash -> touch .env
+
+creating git ignore file and then we add nodemodules anf .env file in it
+so it canoot get commited on github
+
+4> bash -> touch .gitignore (creating .gitignore file)
+5> adding .gitignore template in file (refer : https://github.com/github/gitignore/blob/main/Node.gitignore)
+
+-----------------------------------------------------
+
+/357/HASHING (refer : https://www.npmjs.com/package/md5)
+1> bash -> npm i md5
+2> remove mongoose encryption(ie. // const encrypt = require ("mongoose-encryption");)
+   and add
+   var md5 = require('md5');
+
+-----------------------------------------------------
+/359/Salting and Hashing passwords with Bcrypt ( refer: https://www.npmjs.com/package/bcrypt)
+1> installing nvm -> updating node version to latest 18.16.0
+2> bash -> npm i bcrypt@5
+3> replacing // const md5 = require('md5');
+               to
+                const bcrypt = require('bcrypt');
+
+4> declaring salting rounds, const saltRounds = 10;
+5> add hash function,
+      bcrypt.hash(myPlaintextPassword, saltRounds, function(err, hash) {
+
+});
+---------------------------------------------------------------------
+/361/ Using passport.js for sessions and cookies
+(refer : https://www.npmjs.com/package/express-session)
+1> bash -> npm i passport passport-local passport-local-mongoose express-session
+2> remove const bcrypt and salting
+3> empty post register and login methods
+4> requiring
+      const session = require('express-session');
+      const password = require('passport');
+      const passportLocalMongoose= require('passport-local-mongoose');
+
+5>initialize passport package (refer : https://www.npmjs.com/package/passport)
+      app.use(session({
+          secret: 'Our Little Secret.',
+          resave: false,
+          saveUninitialized: false
+          // cookie: { secure: true }
+      }));
+      app.use(passport.initialize());
+      app.use(passport.session());
+
+6>initialize passport-local-mongoose package (refer : https://www.npmjs.com/package/passport-local-mongoose)
+      userSchema.plugin(passportLocalMongoose);
+   -> configuration
+
+      passport.use(User.createStrategy());
+      passport.serializeUser(User.serializeUser());
+      passport.deserializeUser(User.deserializeUser());
+
+   NOTE - In PasswordLocalMongoose package will Salt and Hash
+          our password automatically.
+
+7> rebuild post register and login methods
+8> setting ("/secrets") and ("/logout") route (refer :https://www.passportjs.org/concepts/authentication/logout/)
+
+---------------------------------------------------------------------
+
+/362/O-Auth and Google authentication(refer : https://www.passportjs.org/packages/passport-google-oauth20/)
+1>bash ->  npm install passport-google-oauth20
+
+
+---------------------------------------------------------------------
+/363/Letting users submitting the secrets
+1> creating get and post route for submitting
+2> here we save the secrets entered by the user
+      by cerating new field(secrets: String) in mongoose table
+3> updating get route for "/secrets"
+
+   User.find({"secret":{$ne: null}}).then((foundUsers)=>{
+        if(foundUsers){
+              res.render("secrets", {usersWithSecrets: foundUsers});
+        }
+    }).catch(err => console.log("Error Occured"))
+});
+  -> looks through all users in Users collection
+where secrets field is not null..then save "foundUsers" in "usersWithSecrets" variable
+which we will use to display on secrets.ejs
+
+4>in secrets.ejs -> for each loop to show all the secrets
+            <% usersWithSecrets.forEach(function(user){
+      <p class="secret-text"><%=user.secret %></p>
+
+    }) %>
