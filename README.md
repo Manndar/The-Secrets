@@ -8,4 +8,6 @@ In addition, the project uses Passport.js, a popular authentication middleware f
 
 By using Passport.js, the project also ensures that user data is kept safe and secure. Passport.js provides a range of security features such as password hashing, encryption, and two-factor authentication to ensure that user data is not compromised.
 
+This project also uses Studio 3T to store user data in a database, providing a reliable and scalable solution for managing user data.
+
 Overall, the Node.js project provides a secure and reliable platform for users to store and manage their secrets, with features such as user authentication and session tracking implemented using Express.js and express-session middleware, and data safety features such as encryption and password hashing implemented using Passport.js.
